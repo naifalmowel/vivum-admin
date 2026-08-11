@@ -47,6 +47,7 @@ class AppTheme {
             onSecondary: Colors.white,
             onSurface: VivumColors.darkWhite,
             outline: VivumColors.darkBorder,
+            surfaceContainerHighest: VivumColors.darkCard,
           )
         : const ColorScheme.light(
             primary: VivumColors.teal,
@@ -55,24 +56,39 @@ class AppTheme {
             onPrimary: Colors.white,
             onSecondary: Colors.white,
             onSurface: VivumColors.lightText,
-            outline: VivumColors.lightBorder,
+            outline: Color(0xFFE5E9F0), // بورد ألطف وأقل حدة
+            surfaceContainerHighest: Color(0xFFF1F4F9),
           );
 
     final baseTextTheme = GoogleFonts.cairoTextTheme();
     final textColor = isDark ? VivumColors.darkWhite : VivumColors.lightText;
     final mutedColor = isDark ? VivumColors.darkMuted : VivumColors.lightMuted;
+    final secondaryTextColor = isDark ? VivumColors.darkMuted : VivumColors.lightMuted;
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       textTheme: baseTextTheme.copyWith(
+        displayLarge: baseTextTheme.displayLarge?.copyWith(color: textColor, fontWeight: FontWeight.bold),
+        displayMedium: baseTextTheme.displayMedium?.copyWith(color: textColor, fontWeight: FontWeight.bold),
         displaySmall: baseTextTheme.displaySmall?.copyWith(color: textColor, fontWeight: FontWeight.bold),
+        headlineLarge: baseTextTheme.headlineLarge?.copyWith(color: textColor, fontWeight: FontWeight.bold),
         headlineMedium: baseTextTheme.headlineMedium?.copyWith(color: textColor, fontWeight: FontWeight.bold),
+        headlineSmall: baseTextTheme.headlineSmall?.copyWith(color: textColor, fontWeight: FontWeight.bold),
         titleLarge: baseTextTheme.titleLarge?.copyWith(color: textColor, fontWeight: FontWeight.bold),
-        bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: mutedColor),
-        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: mutedColor),
+        titleMedium: baseTextTheme.titleMedium?.copyWith(color: textColor, fontWeight: FontWeight.w600),
+        titleSmall: baseTextTheme.titleSmall?.copyWith(color: textColor, fontWeight: FontWeight.w600),
+        bodyLarge: baseTextTheme.bodyLarge?.copyWith(color: textColor),
+        bodyMedium: baseTextTheme.bodyMedium?.copyWith(color: secondaryTextColor),
+        bodySmall: baseTextTheme.bodySmall?.copyWith(color: secondaryTextColor),
+        labelLarge: baseTextTheme.labelLarge?.copyWith(color: textColor, fontWeight: FontWeight.bold),
+        labelMedium: baseTextTheme.labelMedium?.copyWith(color: secondaryTextColor),
+        labelSmall: baseTextTheme.labelSmall?.copyWith(color: secondaryTextColor),
       ),
       scaffoldBackgroundColor: isDark ? VivumColors.darkBG : VivumColors.lightBG,
+      hintColor: mutedColor,
+      dividerColor: isDark ? VivumColors.darkBorder : VivumColors.lightBorder,
+      cardColor: isDark ? VivumColors.darkCard : VivumColors.lightCard,
       colorScheme: colorScheme,
       cardTheme: CardThemeData(
         color: isDark ? VivumColors.darkCard : VivumColors.lightCard,

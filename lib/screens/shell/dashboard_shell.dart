@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
+import '../../providers/user_provider.dart';
 import '../../theme/app_theme.dart';
 
 class DashboardShell extends StatelessWidget {
@@ -58,6 +60,7 @@ class _Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
     final theme = Theme.of(context);
+    final userName = Provider.of<UserProvider>(context).userName;
     
     return Material(
       color: theme.cardColor,
@@ -76,7 +79,10 @@ class _Sidebar extends StatelessWidget {
               child: Icon(Icons.person, size: 40, color: theme.colorScheme.onPrimary),
             ),
             const SizedBox(height: 16),
-            const Text('Admin', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            Text(
+              userName,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
             const SizedBox(height: 32),
             _NavTile(
               icon: Icons.dashboard_outlined,

@@ -108,7 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final lp = AppProvider.of(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       body: LayoutBuilder(
@@ -133,27 +132,46 @@ class _LoginScreenState extends State<LoginScreen> {
               ],
             );
           } else {
-            // Mobile View
+            // Mobile View - Shared style with Desktop side
             return Container(
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark
-                      ? [VivumColors.darkBG, colorScheme.surface]
-                      : [VivumColors.lightBG, VivumColors.lightBGAlt],
+                  colors: [
+                    colorScheme.primary,
+                    colorScheme.primary.withOpacity(0.8),
+                  ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: GlassContainer(
-                    padding: const EdgeInsets.all(32),
-                    child: _buildLoginForm(lp, theme, isMobile: true),
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: -50,
+                    left: -50,
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.05),
+                      ),
+                    ),
                   ),
-                ),
+                  Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: GlassContainer(
+                        blur: 15,
+                        opacity: 0.1,
+                        padding: const EdgeInsets.all(32),
+                        child: _buildLoginForm(lp, theme, isMobile: true),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           }
@@ -270,7 +288,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             if (isMobile) ...[
               Center(
-                child: Icon(Icons.dashboard_customize_rounded, size: 70, color: colorScheme.primary)
+                child: Icon(Icons.dashboard_customize_rounded, size: 70, color: Colors.white)
                     .animate()
                     .scale(duration: 600.ms, curve: Curves.bounceOut),
               ),
@@ -279,7 +297,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Text(
                   'VIVUM',
                   style: textTheme.headlineMedium?.copyWith(
-                    color: colorScheme.primary,
+                    color: Colors.white,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -290,41 +308,45 @@ class _LoginScreenState extends State<LoginScreen> {
               lp.t('auth.login'),
               style: textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w800,
+                color: isMobile ? Colors.white : textTheme.headlineMedium?.color,
               ),
             ).animate().fade().slideY(begin: 0.1),
             const SizedBox(height: 8),
             Text(
               lp.t('auth.subtitle'),
-              style: textTheme.bodyLarge,
+              style: textTheme.bodyLarge?.copyWith(
+                color: isMobile ? Colors.white70 : textTheme.bodyLarge?.color,
+              ),
             ).animate().fade(delay: 100.ms).slideY(begin: 0.1),
             const SizedBox(height: 48),
 
             // Email Field
-            _buildLabel(lp.t('auth.email'), theme),
+            _buildLabel(lp.t('auth.email'), theme, isMobile: isMobile),
             const SizedBox(height: 10),
             TextField(
               controller: _emailController,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface,
+                color: isMobile ? Colors.white : theme.textTheme.bodyLarge?.color,
               ),
               textInputAction: TextInputAction.next,
               decoration: _buildInputDecoration(
                 hint: 'name@company.com',
                 icon: Icons.alternate_email_rounded,
                 theme: theme,
+                isMobile: isMobile,
               ),
             ).animate().fade(delay: 200.ms).slideY(begin: 0.1),
 
             const SizedBox(height: 24),
 
             // Password Field
-            _buildLabel(lp.t('auth.password'), theme),
+            _buildLabel(lp.t('auth.password'), theme, isMobile: isMobile),
             const SizedBox(height: 10),
             TextField(
               controller: _passController,
               obscureText: _isObscured,
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurface,
+                color: isMobile ? Colors.white : theme.textTheme.bodyLarge?.color,
               ),
               textInputAction: TextInputAction.done,
               onSubmitted: (_) => _login(),
@@ -332,10 +354,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 hint: '••••••••',
                 icon: Icons.lock_outline_rounded,
                 theme: theme,
+                isMobile: isMobile,
                 suffix: IconButton(
                   icon: Icon(
                     _isObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: theme.hintColor,
+                    color: isMobile ? Colors.white70 : theme.hintColor,
                     size: 20,
                   ),
                   onPressed: () => setState(() => _isObscured = !_isObscured),
@@ -352,7 +375,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Text(
                   lp.t('auth.forgot_password'),
                   style: TextStyle(
-                    color: colorScheme.primary,
+                    color: isMobile ? Colors.white : colorScheme.primary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -368,16 +391,20 @@ class _LoginScreenState extends State<LoginScreen> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _login,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
+                  backgroundColor: isMobile ? Colors.white : colorScheme.primary,
+                  foregroundColor: isMobile ? colorScheme.primary : colorScheme.onPrimary,
                   elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
                 child: _loading
-                    ? CircularProgressIndicator(color: colorScheme.onPrimary, strokeWidth: 3)
+                    ? CircularProgressIndicator(color: isMobile ? colorScheme.primary : colorScheme.onPrimary, strokeWidth: 3)
                     : Text(
                         lp.t('auth.login_btn'),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                        style: TextStyle(
+                          fontSize: 18, 
+                          fontWeight: FontWeight.w800,
+                          color: isMobile ? colorScheme.primary : colorScheme.onPrimary,
+                        ),
                       ),
               ),
             ).animate().fade(delay: 400.ms).scale(begin: const Offset(0.95, 0.95)),
@@ -397,11 +424,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLabel(String label, ThemeData theme) {
+  Widget _buildLabel(String label, ThemeData theme, {bool isMobile = false}) {
     return Text(
       label,
       style: theme.textTheme.titleSmall?.copyWith(
         fontWeight: FontWeight.w700,
+        color: isMobile ? Colors.white : theme.textTheme.titleSmall?.color,
       ),
     );
   }
@@ -411,30 +439,31 @@ class _LoginScreenState extends State<LoginScreen> {
     required IconData icon,
     required ThemeData theme,
     Widget? suffix,
+    bool isMobile = false,
   }) {
     final colorScheme = theme.colorScheme;
 
     return InputDecoration(
       hintText: hint,
       hintStyle: theme.textTheme.bodyMedium?.copyWith(
-        color: theme.hintColor,
+        color: isMobile ? Colors.white60 : theme.hintColor,
       ),
-      prefixIcon: Icon(icon, color: colorScheme.primary, size: 20),
+      prefixIcon: Icon(icon, color: isMobile ? Colors.white : colorScheme.primary, size: 20),
       suffixIcon: suffix,
       filled: true,
-      fillColor: theme.cardTheme.color,
+      fillColor: isMobile ? Colors.white.withOpacity(0.1) : theme.cardTheme.color,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: colorScheme.outline),
+        borderSide: BorderSide(color: isMobile ? Colors.white24 : colorScheme.outline),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: colorScheme.outline),
+        borderSide: BorderSide(color: isMobile ? Colors.white24 : colorScheme.outline),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        borderSide: BorderSide(color: isMobile ? Colors.white : colorScheme.primary, width: 2),
       ),
     );
   }
