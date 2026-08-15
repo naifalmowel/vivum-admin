@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/dashboard_provider.dart';
 
 class OverviewScreen extends StatelessWidget {
   const OverviewScreen({super.key});
@@ -14,6 +15,8 @@ class OverviewScreen extends StatelessWidget {
     final lp = AppProvider.of(context);
     final theme = Theme.of(context);
     final userName = Provider.of<UserProvider>(context).userName;
+    final dashData = Provider.of<DashboardProvider>(context);
+    
     final screenWidth = MediaQuery.of(context).size.width;
     final isDesktop = screenWidth > 1000;
 
@@ -54,30 +57,33 @@ class OverviewScreen extends StatelessWidget {
             children: [
               _StatCard(
                 title: lp.t('dash.total_projects'),
-                stream: FirebaseFirestore.instance.collection('projects').snapshots(),
+                count: dashData.projectCount,
+                isLoading: dashData.isLoading,
                 icon: Icons.rocket_launch_outlined,
                 color: theme.colorScheme.primary,
-                sparklineData: [0.2, 0.5, 0.4, 0.8, 0.6, 0.9, 0.7],
+                sparklineData: const [0.2, 0.5, 0.4, 0.8, 0.6, 0.9, 0.7],
               ),
               _StatCard(
                 title: lp.t('dash.total_messages'),
-                stream: FirebaseFirestore.instance.collection('contact_requests').snapshots(),
+                count: dashData.messageCount,
+                isLoading: dashData.isLoading,
                 icon: Icons.chat_bubble_outline_rounded,
                 color: Colors.orangeAccent,
-                sparklineData: [0.4, 0.3, 0.6, 0.5, 0.8, 0.4, 0.9],
+                sparklineData: const [0.4, 0.3, 0.6, 0.5, 0.8, 0.4, 0.9],
               ),
               _StatCard(
                 title: lp.t('dash.total_users'),
-                stream: FirebaseFirestore.instance.collection('users').snapshots(),
+                count: dashData.userCount,
+                isLoading: dashData.isLoading,
                 icon: Icons.people_outline_rounded,
                 color: Colors.purpleAccent,
-                sparklineData: [0.1, 0.3, 0.5, 0.4, 0.7, 0.8, 1.0],
+                sparklineData: const [0.1, 0.3, 0.5, 0.4, 0.7, 0.8, 1.0],
               ),
             ],
           ),
           const SizedBox(height: 32),
 
-          // Main Layout: Responsive Row or Column
+          // Main Layout
           Flex(
             direction: isDesktop ? Axis.horizontal : Axis.vertical,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,14 +99,14 @@ class OverviewScreen extends StatelessWidget {
                       style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    _buildActivitySection(theme, lp),
+                    _buildActivitySection(theme, lp, dashData.recentMessages, dashData.isLoading),
                   ],
                 ),
               ),
               if (isDesktop) const SizedBox(width: 24),
               if (!isDesktop) const SizedBox(height: 32),
               
-              // Quick Actions Section (Always visible now)
+              // Quick Actions Section
               Expanded(
                 flex: isDesktop ? 1 : 0,
                 child: Column(
@@ -139,7 +145,7 @@ class OverviewScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActivitySection(ThemeData theme, AppProvider lp) {
+  Widget _buildActivitySection(ThemeData theme, AppProvider lp, List<Map<String, dynamic>> messages, bool isLoading) {
     return Column(
       children: [
         // Performance Chart
@@ -180,39 +186,30 @@ class OverviewScreen extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('contact_requests')
-              .orderBy('createdAt', descending: true)
-              .limit(3)
-              .snapshots(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) return const LinearProgressIndicator();
-            final docs = snapshot.data!.docs;
-            if (docs.isEmpty) return const Text('No recent activity');
-            
-            return Column(
-              children: docs.map((doc) {
-                final data = doc.data() as Map<String, dynamic>;
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Colors.orangeAccent.withOpacity(0.1),
-                      child: const Icon(Icons.mail_outline, color: Colors.orangeAccent, size: 20),
-                    ),
-                    title: Text(data['name'] ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                    subtitle: Text(data['message'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
-                    trailing: Text(
-                      data['createdAt'] != null ? DateFormat('HH:mm', lp.lang).format((data['createdAt'] as Timestamp).toDate()) : '--:--',
-                      style: theme.textTheme.bodySmall,
-                    ),
+        if (isLoading)
+          const LinearProgressIndicator()
+        else if (messages.isEmpty)
+          const Text('No recent messages')
+        else
+          Column(
+            children: messages.map((data) {
+              return Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.orangeAccent.withValues(alpha: 0.1),
+                    child: const Icon(Icons.mail_outline, color: Colors.orangeAccent, size: 20),
                   ),
-                );
-              }).toList(),
-            );
-          },
-        ),
+                  title: Text(data['name'] ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  subtitle: Text(data['message'] ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
+                  trailing: Text(
+                    data['createdAt'] != null ? DateFormat('HH:mm', lp.lang).format((data['createdAt'] as Timestamp).toDate()) : '--:--',
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
       ],
     );
   }
@@ -220,14 +217,16 @@ class OverviewScreen extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final String title;
-  final Stream<QuerySnapshot> stream;
+  final int count;
+  final bool isLoading;
   final IconData icon;
   final Color color;
   final List<double> sparklineData;
 
   const _StatCard({
     required this.title,
-    required this.stream,
+    required this.count,
+    required this.isLoading,
     required this.icon,
     required this.color,
     required this.sparklineData,
@@ -242,7 +241,7 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+        border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,7 +252,7 @@ class _StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1), 
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 24),
@@ -262,19 +261,20 @@ class _StatCard extends StatelessWidget {
             ],
           ),
           const Spacer(),
-          StreamBuilder<QuerySnapshot>(
-            stream: stream,
-            builder: (context, snapshot) {
-              final count = snapshot.hasData ? snapshot.data!.docs.length : 0;
-              return Text(
-                '$count',
-                style: theme.textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: theme.colorScheme.onSurface,
-                ),
-              );
-            },
-          ),
+          if (isLoading)
+            SizedBox(
+              height: 40,
+              width: 40,
+              child: CircularProgressIndicator(strokeWidth: 2, color: color.withValues(alpha: 0.5)),
+            )
+          else
+            Text(
+              '$count',
+              style: theme.textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           Text(
             title, 
             style: theme.textTheme.bodyMedium?.copyWith(color: theme.hintColor),
@@ -315,7 +315,7 @@ class _QuickActionTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.cardTheme.color,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: theme.colorScheme.outline.withOpacity(0.5)),
+            border: Border.all(color: theme.colorScheme.outline.withValues(alpha: 0.5)),
           ),
           child: Row(
             children: [
@@ -382,7 +382,7 @@ class _ActivityChartPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [color.withOpacity(0.3), color.withOpacity(0)],
+        colors: [color.withValues(alpha: 0.3), color.withValues(alpha: 0)],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
 
     final path = Path();
@@ -410,7 +410,7 @@ class _ActivityChartPainter extends CustomPainter {
 
     // Draw Grid Lines (Lightly)
     final gridPaint = Paint()
-      ..color = (isDark ? Colors.white : Colors.black).withOpacity(0.05)
+      ..color = (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05)
       ..strokeWidth = 1;
     for (var i = 0; i < 5; i++) {
       final y = i * (size.height / 4);

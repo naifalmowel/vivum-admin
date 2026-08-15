@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../providers/app_provider.dart';
 import '../../providers/user_provider.dart';
-import '../../theme/app_theme.dart';
+import '../../widgets/app_bar_actions.dart';
 
 class DashboardShell extends StatelessWidget {
   final Widget child;
@@ -21,18 +21,9 @@ class DashboardShell extends StatelessWidget {
       appBar: AppBar(
         title: const Text('VIVUM Admin'),
         actions: [
-          IconButton(
-            icon: Icon(lp.isDark ? Icons.light_mode : Icons.dark_mode),
-            onPressed: lp.onToggleTheme,
-          ),
-          IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: lp.onToggleLang,
-          ),
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => _showLogoutConfirm(context, lp),
+          AppBarActions(
+            showLogout: true,
+            onLogout: () => _showLogoutConfirm(context, lp),
           ),
           const SizedBox(width: 16),
         ],
@@ -142,7 +133,7 @@ class _NavTile extends StatelessWidget {
 
     return ListTile(
       selected: isActive,
-      selectedTileColor: colorScheme.primary.withOpacity(0.1),
+      selectedTileColor: colorScheme.primary.withValues(alpha:0.1),
       leading: Icon(icon, color: isActive ? colorScheme.primary : null),
       title: Text(
         title, 
@@ -162,11 +153,11 @@ Future<void> _showLogoutConfirm(BuildContext context, AppProvider lp) async {
     builder: (context) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Text(lp.t('dash.logout'), style: const TextStyle(fontWeight: FontWeight.bold)),
-      content: const Text('هل أنت متأكد من رغبتك في تسجيل الخروج من النظام؟'),
+      content: Text(lp.t('dash.logout_confirm')),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('إلغاء'),
+          child: Text(lp.t('dash.cancel_btn')),
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, true),
@@ -175,7 +166,7 @@ Future<void> _showLogoutConfirm(BuildContext context, AppProvider lp) async {
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: const Text('خروج'),
+          child: Text(lp.t('dash.logout_btn')),
         ),
       ],
     ),

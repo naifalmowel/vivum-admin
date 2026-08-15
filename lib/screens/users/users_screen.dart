@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../../providers/app_provider.dart';
 import '../../widgets/toast_helper.dart';
+import '../../widgets/error_state_widget.dart';
 
 class UsersScreen extends StatefulWidget {
   const UsersScreen({super.key});
@@ -115,9 +116,17 @@ class _UsersScreenState extends State<UsersScreen> {
               child: StreamBuilder<QuerySnapshot>(
                 stream: _firestore.collection('users').snapshots(),
                 builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return ErrorStateWidget(
+                      errorMessage: snapshot.error.toString(),
+                      onRetry: () => setState(() {}),
+                    );
+                  }
+                  
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
+
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return Center(child: Text(lp.isAr ? 'لا يوجد مستخدمين حالياً' : 'No users found'));
                   }
@@ -130,10 +139,9 @@ class _UsersScreenState extends State<UsersScreen> {
                     return _buildDesktopTable(users, lp, theme);
                   }
                 },
-              ),
             ),
           ),
-        ],
+          )],
       ),
     );
   }
@@ -149,7 +157,7 @@ class _UsersScreenState extends State<UsersScreen> {
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           leading: CircleAvatar(
-            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+            backgroundColor: theme.colorScheme.primary.withValues(alpha:0.1),
             child: Text(user['name']?[0]?.toUpperCase() ?? '?', style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
           ),
           title: Text(user['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
@@ -173,7 +181,7 @@ class _UsersScreenState extends State<UsersScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withOpacity(0.05),
+            color: theme.colorScheme.primary.withValues(alpha:0.05),
             border: Border(bottom: BorderSide(color: theme.dividerColor)),
           ),
           child: Row(
@@ -206,7 +214,7 @@ class _UsersScreenState extends State<UsersScreen> {
                         children: [
                           CircleAvatar(
                             radius: 18,
-                            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                            backgroundColor: theme.colorScheme.primary.withValues(alpha:0.1),
                             child: Text(user['name']?[0]?.toUpperCase() ?? '?', style: TextStyle(color: theme.colorScheme.primary, fontSize: 14)),
                           ),
                           const SizedBox(width: 12),
@@ -261,7 +269,7 @@ class _UsersScreenState extends State<UsersScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: (isAdmin ? theme.colorScheme.primary : theme.colorScheme.secondary).withOpacity(0.1),
+          color: (isAdmin ? theme.colorScheme.primary : theme.colorScheme.secondary).withValues(alpha:0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
@@ -444,7 +452,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
                 const SizedBox(height: 16),
               ],
               DropdownButtonFormField<String>(
-                value: _role,
+                initialValue: _role,
                 decoration: _buildInputDecoration(lp.t('user.role'), Icons.security, theme),
                 items: [
                   DropdownMenuItem(value: 'Admin', child: Text(lp.t('user.admin'))),
@@ -459,7 +467,7 @@ class _UserFormDialogState extends State<UserFormDialog> {
                 subtitle: Text(_isActive ? lp.t('user.active') : lp.t('user.inactive'), style: TextStyle(color: _isActive ? Colors.green : Colors.red, fontSize: 12)),
                 value: _isActive,
                 onChanged: (v) => setState(() => _isActive = v),
-                activeColor: theme.colorScheme.primary,
+                activeThumbColor: theme.colorScheme.primary,
               ),
               if (isEdit) ...[
                 const Divider(),
