@@ -5,20 +5,23 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DashboardProvider with ChangeNotifier {
   int? _projectCount;
   int? _messageCount;
+  int? _testimonialCount;
   int? _userCount;
   List<Map<String, dynamic>>? _recentMessages;
   
   StreamSubscription? _projSub;
   StreamSubscription? _msgSub;
+  StreamSubscription? _testiSub;
   StreamSubscription? _userSub;
   StreamSubscription? _recentMsgSub;
 
   int get projectCount => _projectCount ?? 0;
   int get messageCount => _messageCount ?? 0;
+  int get testimonialCount => _testimonialCount ?? 0;
   int get userCount => _userCount ?? 0;
   List<Map<String, dynamic>> get recentMessages => _recentMessages ?? [];
 
-  bool get isLoading => _projectCount == null || _messageCount == null || _userCount == null || _recentMessages == null;
+  bool get isLoading => _projectCount == null || _messageCount == null || _testimonialCount == null || _userCount == null || _recentMessages == null;
 
   DashboardProvider() {
     _init();
@@ -32,6 +35,11 @@ class DashboardProvider with ChangeNotifier {
 
     _msgSub = FirebaseFirestore.instance.collection('contact_requests').snapshots().listen((snap) {
       _messageCount = snap.docs.length;
+      notifyListeners();
+    });
+
+    _testiSub = FirebaseFirestore.instance.collection('testimonials').snapshots().listen((snap) {
+      _testimonialCount = snap.docs.length;
       notifyListeners();
     });
 
@@ -55,6 +63,7 @@ class DashboardProvider with ChangeNotifier {
   void dispose() {
     _projSub?.cancel();
     _msgSub?.cancel();
+    _testiSub?.cancel();
     _userSub?.cancel();
     _recentMsgSub?.cancel();
     super.dispose();

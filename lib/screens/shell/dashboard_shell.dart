@@ -47,6 +47,13 @@ class _Sidebar extends StatelessWidget {
   final AppProvider lp;
   const _Sidebar({required this.lp});
 
+  void _navigate(BuildContext context, String location) {
+    if (Scaffold.of(context).isDrawerOpen) {
+      Navigator.pop(context);
+    }
+    context.go(location);
+  }
+
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
@@ -79,25 +86,31 @@ class _Sidebar extends StatelessWidget {
               icon: Icons.dashboard_outlined,
               title: lp.t('dash.overview'),
               isActive: location == '/overview',
-              onTap: () => context.go('/overview'),
+              onTap: () => _navigate(context, '/overview'),
             ),
             _NavTile(
               icon: Icons.work_outline,
               title: lp.t('dash.projects'),
               isActive: location == '/projects',
-              onTap: () => context.go('/projects'),
+              onTap: () => _navigate(context, '/projects'),
             ),
             _NavTile(
               icon: Icons.message_outlined,
               title: lp.t('dash.messages'),
               isActive: location == '/messages',
-              onTap: () => context.go('/messages'),
+              onTap: () => _navigate(context, '/messages'),
+            ),
+            _NavTile(
+              icon: Icons.star_outline_rounded,
+              title: lp.t('dash.testimonials'),
+              isActive: location == '/testimonials',
+              onTap: () => _navigate(context, '/testimonials'),
             ),
             _NavTile(
               icon: Icons.people_outline,
               title: lp.t('dash.users'),
               isActive: location == '/users',
-              onTap: () => context.go('/users'),
+              onTap: () => _navigate(context, '/users'),
             ),
             const Spacer(),
             ListTile(

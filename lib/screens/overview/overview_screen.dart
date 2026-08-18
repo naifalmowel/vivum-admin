@@ -48,12 +48,12 @@ class OverviewScreen extends StatelessWidget {
 
           // Stats Grid
           GridView.count(
-            crossAxisCount: screenWidth > 1200 ? 3 : (screenWidth > 800 ? 2 : 1),
+            crossAxisCount: screenWidth > 1400 ? 4 : (screenWidth > 900 ? 2 : 1),
             crossAxisSpacing: 24,
             mainAxisSpacing: 24,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            childAspectRatio: screenWidth > 1200 ? 1.8 : 1.6,
+            mainAxisExtent: 220, // Fixed height to prevent overflow
             children: [
               _StatCard(
                 title: lp.t('dash.total_projects'),
@@ -70,6 +70,14 @@ class OverviewScreen extends StatelessWidget {
                 icon: Icons.chat_bubble_outline_rounded,
                 color: Colors.orangeAccent,
                 sparklineData: const [0.4, 0.3, 0.6, 0.5, 0.8, 0.4, 0.9],
+              ),
+              _StatCard(
+                title: lp.t('dash.total_testimonials'),
+                count: dashData.testimonialCount,
+                isLoading: dashData.isLoading,
+                icon: Icons.star_outline_rounded,
+                color: Colors.amber,
+                sparklineData: const [0.3, 0.6, 0.4, 0.7, 0.5, 0.8, 0.9],
               ),
               _StatCard(
                 title: lp.t('dash.total_users'),

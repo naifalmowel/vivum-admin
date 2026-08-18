@@ -146,7 +146,7 @@ class _ProjectCard extends StatelessWidget {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           return Dialog(
-            backgroundColor: Colors.black87,
+            backgroundColor: Colors.black.withValues(alpha: 0.1), // خلفية سوداء شفافة فخمة
             insetPadding: EdgeInsets.zero,
             child: Stack(
               alignment: Alignment.center,

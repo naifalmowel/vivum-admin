@@ -15,13 +15,13 @@ class VivumColors {
   static const darkMuted = Color(0xFF9499B8);
   static const darkWhite = Color(0xFFE2E4E9);
 
-  static const lightBG = Color(0xFFF5F7FA); 
-  static const lightBGAlt = Color(0xFFEDF1F5); 
-  static const lightSurface = Color(0xFFFDFDFD); 
-  static const lightCard = Color(0xFFFFFFFF);
-  static const lightBorder = Color(0xFFD1D9E0); 
-  static const lightMuted = Color(0xFF5A6672); 
-  static const lightText = Color(0xFF1A1F2E); 
+  static const lightBG = Color(0xFFF0F4F8); // أزرق ثلجي فاتح جداً
+  static const lightBGAlt = Color(0xFFD9E2EC); 
+  static const lightSurface = Color(0xFFFFFFFF); 
+  static const lightCard = Color(0xFFFFFFFF); // أبيض ناصع
+  static const lightBorder = Color(0xFFD9E2EC); // كحلي فاتح جداً
+  static const lightMuted = Color(0xFF486581); // درجة متوسطة من الكحلي
+  static const lightText = Color(0xFF102A43); // أزرق ليلي داكن جداً
 
   static const LinearGradient tealGradient = LinearGradient(
     colors: [teal, Color(0xFF006B7A)],
@@ -56,8 +56,8 @@ class AppTheme {
             onPrimary: Colors.white,
             onSecondary: Colors.white,
             onSurface: VivumColors.lightText,
-            outline: Color(0xFFE5E9F0), // بورد ألطف وأقل حدة
-            surfaceContainerHighest: Color(0xFFF1F4F9),
+            outline: VivumColors.lightBorder, 
+            surfaceContainerHighest: Color(0xFFE1E8F0), // ظل أنعم من الأزرق الثلجي
           );
 
     final baseTextTheme = GoogleFonts.cairoTextTheme();
@@ -92,10 +92,14 @@ class AppTheme {
       colorScheme: colorScheme,
       cardTheme: CardThemeData(
         color: isDark ? VivumColors.darkCard : VivumColors.lightCard,
-        elevation: 0,
+        elevation: isDark ? 0 : 2, // إضافة شادو خفيف جداً في اللايت مود لتمييز الكروت
+        shadowColor: Colors.black.withValues(alpha: 0.05),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: colorScheme.outline, width: 1),
+          side: BorderSide(
+            color: colorScheme.outline, 
+            width: isDark ? 1 : 0.5, // بورد أنعم في اللايت مود مع الشادو
+          ),
         ),
       ),
     );

@@ -16,6 +16,7 @@ import 'screens/shell/dashboard_shell.dart';
 import 'screens/overview/overview_screen.dart';
 import 'screens/projects/projects_manager_screen.dart';
 import 'screens/messages/messages_screen.dart';
+import 'screens/testimonials/testimonials_screen.dart'; // Add this
 import 'screens/users/users_screen.dart';
 
 void main() async {
@@ -70,6 +71,7 @@ class _VivumDashboardAppState extends State<VivumDashboardApp> {
             GoRoute(path: '/overview', builder: (c, s) => const OverviewScreen()),
             GoRoute(path: '/projects', builder: (c, s) => const ProjectsManagerScreen()),
             GoRoute(path: '/messages', builder: (c, s) => const MessagesScreen()),
+            GoRoute(path: '/testimonials', builder: (c, s) => const TestimonialsManagerScreen()),
             GoRoute(path: '/users', builder: (c, s) => const UsersScreen()),
           ],
         ),
